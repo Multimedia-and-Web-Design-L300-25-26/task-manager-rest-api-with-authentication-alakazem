@@ -1,15 +1,21 @@
 import request from "supertest";
 import app from "../src/app.js";
+import mongoose from "mongoose";
 
 let token;
 let taskId;
 
 beforeAll(async () => {
+  // Clear database for tasks tests
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany({});
+  }
+
   // Register
   await request(app)
     .post("/api/auth/register")
     .send({
-      name: "Task User",
       email: "task@example.com",
       password: "123456"
     });
@@ -39,8 +45,7 @@ describe("Task Routes", () => {
       .post("/api/tasks")
       .set("Authorization", `Bearer ${token}`)
       .send({
-        title: "Test Task",
-        description: "Testing"
+        title: "Test Task"
       });
 
     expect(res.statusCode).toBe(201);
